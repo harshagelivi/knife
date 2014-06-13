@@ -3,6 +3,27 @@ GtkWidget * window;
 void destroy_signal(GtkWidget * widget, gpointer data){
 	gtk_main_quit();
 }
+void on_comment_button_clicked (GtkToolButton * tool_button, GtkNotebook  * notebook){
+	gint page_no = gtk_notebook_get_current_page(notebook);
+	GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *)gtk_notebook_get_nth_page (notebook, page_no) );
+	GtkTextBuffer * buffer = gtk_text_view_get_buffer ((GtkTextView *)text_view);
+	GtkTextIter iter;
+	GtkTextIter end;
+	GtkTextMark *cursor;
+
+	gchar *text;
+
+
+	cursor = gtk_text_buffer_get_mark (buffer, "insert");
+
+	gtk_text_buffer_get_iter_at_mark (buffer, &iter, cursor);
+
+	gtk_text_iter_set_line_offset (&iter, 0);
+	gtk_text_buffer_insert (buffer, &iter, "/* ", -1);
+	gtk_text_iter_forward_to_line_end (&iter);
+	gtk_text_buffer_insert (buffer, &iter, " */", -1);
+	gtk_widget_show_all (window);		
+}
 void on_open_button_clicked (GtkToolButton * tool_button, GtkNotebook * note_book){
 	GtkWidget *dialog;
 
@@ -50,8 +71,8 @@ void on_button_clicked (GtkToolButton * tool_button, GtkNotebook * note_book){
 }
 
 int main(int argc, char **argv){
-	GtkWidget  * text_view, *note_book, *pane, *button, *open_button;
-	GtkToolItem * tool_button, *tool_open_button;
+	GtkWidget  * text_view, *note_book, *pane, *button, *open_button, *comment_button;
+	GtkToolItem * tool_button, *tool_open_button, *tool_comment_button;
 	GtkWidget * tool_bar;
 	GtkTextBuffer * buffer;
 	
@@ -88,6 +109,12 @@ int main(int argc, char **argv){
 	g_signal_connect ((GtkToolButton *)(tool_open_button), "clicked", G_CALLBACK (on_open_button_clicked), note_book);
 	gtk_toolbar_insert(GTK_TOOLBAR(tool_bar), tool_open_button, 1);
 	
+
+	comment_button=gtk_button_new_with_label("/* */");
+	tool_comment_button=gtk_tool_button_new((GtkWidget *)comment_button, NULL);
+	g_signal_connect ((GtkToolButton *)(tool_comment_button), "clicked", G_CALLBACK(on_comment_button_clicked),note_book);
+	gtk_toolbar_insert(GTK_TOOLBAR(tool_bar), tool_comment_button, 1);
+
 	gtk_widget_show_all (window);
 
 	gtk_main ();
