@@ -1,6 +1,6 @@
-knife
+knife 1.0
 =====
 
-Type as fast as you cut..!!!!
+Edit precisely with the Knife..!!!!
 
 A text editor in C++ and Gtk3
