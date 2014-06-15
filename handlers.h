@@ -72,7 +72,6 @@ void on_open_button_clicked (GtkToolButton * tool_button, GtkNotebook * note_boo
 		
 		filename = gtk_file_chooser_get_filename (GTK_FILE_CHOOSER (dialog));
 		gint page_no=gtk_notebook_get_current_page(note_book);
-		gtk_notebook_remove_page(note_book,page_no);	
 		GError *err=NULL;
         	gchar *buff;
 		if(g_file_get_contents(filename, &buff, NULL, &err)){
@@ -84,12 +83,25 @@ void on_open_button_clicked (GtkToolButton * tool_button, GtkNotebook * note_boo
 			gtk_text_buffer_set_text ((GtkTextBuffer *)source_buffer, (const gchar *)(buff), -1);
 			GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 			gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
-			gtk_notebook_insert_page((GtkNotebook *) (note_book), (scrolledwindow), NULL,page_no);
+
+			GtkWidget * curr_scrolledwindow = gtk_notebook_get_nth_page (note_book, page_no);
+			const gchar * curr_name = gtk_notebook_get_tab_label_text (note_book, curr_scrolledwindow);
+			gint set_page;
+			if(!curr_name){
+				gtk_notebook_remove_page(note_book,page_no);	
+				set_page = page_no;
+				gtk_notebook_insert_page((GtkNotebook *) (note_book), (scrolledwindow), NULL, page_no);
+			}else{
+				set_page=-1;
+				gtk_notebook_append_page((GtkNotebook *) (note_book), (scrolledwindow), NULL);
+			}
+
 			gchar * dir_name = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
 			gchar * name=get_only_name(dir_name, filename);
 			gtk_notebook_set_tab_label_text ((GtkNotebook *) (note_book), (GtkWidget *)scrolledwindow, filename);
+			
 			gtk_widget_show_all (window);	
-			gtk_notebook_set_current_page(note_book,page_no);
+			gtk_notebook_set_current_page(note_book, set_page);
 		}		
 	}
 	gtk_widget_destroy (dialog);
