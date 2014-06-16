@@ -2,6 +2,28 @@ void destroy_signal(GtkWidget * widget, gpointer data){
 	gtk_main_quit();
 }
 
+void on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
+	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+	GList * child = gtk_container_get_children ((GtkContainer *)gstack);	
+	if(event->keyval==GDK_KEY_Page_Down){
+		while(child){
+			if(child->data==scrolledwindow) break;
+			child=child->next;
+		}
+		if(child) child=child->next;
+		if(child) gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)(child->data));
+	}
+	if(event->keyval==GDK_KEY_Page_Up){
+		while(child){
+			if(child->data==scrolledwindow) break;
+			child=child->next;
+		}
+		if(child) child=child->prev;
+		if(child) gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)(child->data));
+	}
+	
+}
+
 void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *) scrolledwindow);
