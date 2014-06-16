@@ -10,3 +10,4 @@ gchar * get_only_name(gchar * dir_name, gchar * file_name){
 	name[j]=0;
 	return name;
 }
+
