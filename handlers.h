@@ -2,7 +2,7 @@ void destroy_signal(GtkWidget * widget, gpointer data){
 	gtk_main_quit();
 }
 
-void on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
+gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GList * child = gtk_container_get_children ((GtkContainer *)gstack);	
 	if(event->keyval==GDK_KEY_Page_Down){
@@ -12,6 +12,7 @@ void on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
 		}
 		if(child) child=child->next;
 		if(child) gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)(child->data));
+		return TRUE;
 	}
 	if(event->keyval==GDK_KEY_Page_Up){
 		while(child){
@@ -20,7 +21,9 @@ void on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
 		}
 		if(child) child=child->prev;
 		if(child) gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)(child->data));
+		return TRUE;
 	}
+	return FALSE;
 	
 }
 
@@ -100,11 +103,17 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 		GError *err=NULL;
         	gchar *buff;
 		if(g_file_get_contents(filepath, &buff, NULL, &err)){
-
+			gboolean buffer_modified_flag=TRUE;
 			GtkWidget * curr_scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
-			const gchar * curr_name = gtk_stack_get_visible_child_name( (GtkStack *)gstack);
-			GtkWidget * curr_text_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
-			GtkTextBuffer * curr_buffer = gtk_text_view_get_buffer ((GtkTextView *)curr_text_view);	
+			const gchar * curr_name;
+			GtkWidget * curr_text_view;
+			GtkTextBuffer * curr_buffer;
+			if(curr_scrolledwindow){
+				curr_name = gtk_stack_get_visible_child_name( (GtkStack *)gstack);
+				curr_text_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
+				curr_buffer = gtk_text_view_get_buffer ((GtkTextView *)curr_text_view);	
+				buffer_modified_flag = gtk_text_buffer_get_modified (curr_buffer);
+			}	
 
 			GtkSourceBuffer * source_buffer = gtk_source_buffer_new (NULL);
 			GtkWidget * source_view = gtk_source_view_new_with_buffer (source_buffer);
@@ -124,11 +133,9 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 			g_value_init (&path, G_TYPE_STRING);
 			g_value_set_static_string (&path, g_strdup(filepath));
 
-			if(gtk_text_buffer_get_modified (curr_buffer)){
+			if(buffer_modified_flag){
 				gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);			
 				gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, filepath, name);
-				gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "name", &path); 
-				gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "title", &file_name); 
 				gtk_widget_show_all (window);	
 				gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)scrolledwindow);
 			}else{

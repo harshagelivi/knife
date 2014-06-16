@@ -11,6 +11,6 @@ void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data);
 void on_open_button_clicked (GtkToolButton * tool_button, gpointer data);
 void on_save_button_clicked (GtkToolButton * tool_button, gpointer data);
 void on_button_clicked (GtkToolButton * tool_button, gpointer data);
-void on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data);
+gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data);
 
 gchar * get_only_name(gchar * dir_name, gchar * file_name);
