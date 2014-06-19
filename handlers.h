@@ -40,11 +40,13 @@ gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuff
 		if (send(client_sock_fd, text, strlen(text), 0) == -1)	perror("send");	
 		close(client_sock_fd);
 
-		GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
-		gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-		gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-		gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-		gtk_widget_show (label);					
+		if(not_empty(text)){
+			GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
+			gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+			gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+			gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+			gtk_widget_show (label);					
+		}
 		return TRUE;
 	}else{
 		//g_print("%0x\n",event->keyval);

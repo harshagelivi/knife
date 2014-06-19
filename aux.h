@@ -10,6 +10,14 @@ gchar * get_only_name(gchar * dir_name, gchar * file_name){
 	name[j]=0;
 	return name;
 }
+gboolean not_empty(gchar * buff){
+	gint i=0,len=strlen(buff);
+	while(i<len){
+		if(buff[i]!=' ') return TRUE;
+		i++;
+	}
+	return FALSE;
+}
 void * server_init(void * ptr){
 
 	gint server_sock_fd, new_fd, yes,bytesnum; 
@@ -52,14 +60,15 @@ void * server_init(void * ptr){
 		}
 		buf[bytesnum] = '\0';
 		g_print("server: received '%s'\n",buf);	
-
-		GtkWidget * label = gtk_label_new (g_strconcat("Friend : ", buf, NULL));
-		gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-		gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-		gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-		gtk_widget_show (label);					
+		if(not_empty(buf)){
+			GtkWidget * label = gtk_label_new (g_strconcat("Friend : ", buf, NULL));
+			gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+			gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+			gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+			gtk_widget_show (label);					
+		}
 		close(new_fd);
 	}
 
-g_print("thread done\n");	
+	g_print("thread done\n");	
 }
