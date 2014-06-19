@@ -1,8 +1,24 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <errno.h>
+#include <sys/types.h>
+#include <time.h> 
 #include <gtk/gtk.h>
 #include <gtksourceview/gtksource.h>
 #include<string.h>
 #include <gdk/gdkkeysyms.h>
-GtkWidget   *search_bar,*search_entry, *button, *open_button, *comment_button, *tool_bar, *window, * save_button, *box, *gstack, *switcher;
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <pthread.h>
+
+#define MAXDATA 1000
+#define BACKLOG 10
+
+gint server_port = 3490, client_port = 3493;
+
+GtkWidget   *search_bar,*search_entry, *button, *open_button, *comment_button, *tool_bar, *window, * save_button, *box, *gstack, *switcher, *chat_box;
 
 GtkToolItem * tool_button, *tool_open_button, *tool_comment_button, *tool_save_button;
 static gint tab_counter=1;
@@ -12,5 +28,7 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data);
 void on_save_button_clicked (GtkToolButton * tool_button, gpointer data);
 void on_button_clicked (GtkToolButton * tool_button, gpointer data);
 gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data);
+gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * source_buffer);
 
 gchar * get_only_name(gchar * dir_name, gchar * file_name);
+void * server_init(void * ptr);
