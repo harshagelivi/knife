@@ -310,10 +310,8 @@ void on_background_color_menu_selected(GtkMenuItem * menu_i,GtkWidget *box){
 
 
 void on_remove_page_button_clicked (GtkToolButton * tool_button, gpointer data){
-	if(tab_counter>1){
-		GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+	if(scrolledwindow)
 		gtk_widget_destroy ((GtkWidget *) scrolledwindow);
-		tab_counter--;
-	}
 }
 //By Madhavi: end
