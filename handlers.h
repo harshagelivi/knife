@@ -3,49 +3,25 @@ void destroy_signal(GtkWidget * widget, gpointer data){
 }
 gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * buffer){
 	if(event->keyval==GDK_KEY_KP_Enter || event->keyval==GDK_KEY_Return){
-
 		GtkTextIter start,end;
 		gchar *text;
-		GError *err=NULL;
 	
-
 		gtk_text_buffer_get_start_iter ((GtkTextBuffer *)buffer, &start);
 		gtk_text_buffer_get_end_iter ((GtkTextBuffer *)buffer, &end);
 		text = gtk_text_buffer_get_text ((GtkTextBuffer *)buffer, &start, &end, FALSE);    
 		gtk_text_buffer_set_text( (GtkTextBuffer *)buffer, "", -1);		   
-		
-		gchar  server_ip[INET6_ADDRSTRLEN];
-		gint client_sock_fd, bytesnum,yes=1;
-	
-		if((client_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-			perror("server: socket");
-		}
 
-		if (setsockopt(client_sock_fd, SOL_SOCKET, SO_REUSEADDR, &yes,sizeof(gint)) == -1){
-			perror("setsockopt");
-			exit(1);
-		}
-		struct sockaddr_in server_addr;
-		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(client_port);
-
-		inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr.s_addr);
-	
-		if (connect(client_sock_fd, (struct sockaddr *)&server_addr, sizeof server_addr) == -1) {
-			close(client_sock_fd);
-			perror("client: connect");
-		}
-		inet_ntop(server_addr.sin_family, (void *)&server_addr.sin_addr,  server_ip, sizeof  server_ip);
-		printf("client: connected to %s\n",  server_ip);
-		if (send(client_sock_fd, text, strlen(text), 0) == -1)	perror("send");	
-		close(client_sock_fd);
-
-		if(not_empty(text)){
-			GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
-			gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-			gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-			gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-			gtk_widget_show (label);					
+		if (send(client_sock_fd, text, strlen(text), 0) == -1){
+			perror("send");	
+		}else{
+			if(not_empty(text)){
+				g_print("client: sent '%s'", text);
+				GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
+				gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+				gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+				gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+				gtk_widget_show (label);					
+			}			
 		}
 		return TRUE;
 	}else{
@@ -214,7 +190,18 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 	}
 	gtk_widget_destroy (dialog);
 }
-
+void on_connect_switch_activate (GtkSwitch * connect_switch, gpointer data){
+//	GtkWidget * ip_dialog = gtk_dialog_new ();
+//	gtk_dialog_run( (GtkDialog *)ip_dialog);
+	if(gtk_switch_get_active ((GtkSwitch *)connect_switch)){
+		if(client_flag) return;
+		client_flag=client_init() ? 1 : 0;
+	}else{
+		client_flag=0;
+		close(client_sock_fd);
+		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, FALSE);		
+	}	
+}
 void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	GtkSourceBuffer * source_buffer = gtk_source_buffer_new (NULL);
 	GtkWidget * source_view = gtk_source_view_new_with_buffer (source_buffer);
