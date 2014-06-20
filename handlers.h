@@ -211,9 +211,20 @@ void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
 	gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, g_strdup_printf ("New %d",tab_counter), g_strdup_printf ("New %d",tab_counter));
+
+
 	tab_counter++;	
 	gtk_widget_show_all (window);		
 	gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)scrolledwindow);
 }
 
 
+// By Madhavi:	start
+void on_connect_box_button_clicked(GtkButton * conn_box_button, GtkEntry * connect_ip_entry){
+	const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
+	const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
+	server_port = atoi(port);
+	strcpy(server_ip1,ip);
+//	cout<<server_ip1<<"	"<<server_port<<"\n";
+}
+//By Madhavi: end

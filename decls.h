@@ -12,7 +12,8 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
+#include <iostream>
+using namespace std;
 #define MAXDATA 1000
 #define BACKLOG 10
 
@@ -23,6 +24,11 @@ struct sockaddr_in server_addr;
 
 GtkWidget   *search_bar,*search_entry, *add_button, *open_button, *comment_button, *connect_switch, *window, * save_button, *box, *gstack, *switcher, *chat_box, *chat_source_view, *connect_button, * widget_box;
 GtkSourceBuffer * chat_source_buffer;
+
+//By Madhavi: start
+GtkWidget  *connect_box, *connect_ip_label, *connect_port_label, *connect_box_button, *connect_ip_entry, *connect_port_entry;
+gchar  server_ip1[INET6_ADDRSTRLEN];
+//By Madhavi: end
 
 
 static gint tab_counter=1;
