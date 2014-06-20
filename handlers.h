@@ -88,47 +88,49 @@ void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
 void on_save_button_clicked (GtkToolButton * tool_button, gpointer data){
 
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
-	const gchar * curr_name = gtk_stack_get_visible_child_name( (GtkStack *)gstack);
-	GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *) scrolledwindow);
-	GtkTextBuffer * buffer = gtk_text_view_get_buffer ((GtkTextView *)text_view);	
+	if(scrolledwindow){
+		const gchar * curr_name = gtk_stack_get_visible_child_name( (GtkStack *)gstack);
+		GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *) scrolledwindow);
+		GtkTextBuffer * buffer = gtk_text_view_get_buffer ((GtkTextView *)text_view);	
 
-	GtkTextIter start,end;
-	gchar *text;
-	GError *err=NULL;
+		GtkTextIter start,end;
+		gchar *text;
+		GError *err=NULL;
 	
-	gtk_widget_set_sensitive (text_view, FALSE);
-	gtk_text_buffer_get_start_iter (buffer, &start);
-	gtk_text_buffer_get_end_iter (buffer, &end);
-	text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);       
-	gtk_text_buffer_set_modified (buffer, FALSE);
-	gtk_widget_set_sensitive (text_view, TRUE);
+		gtk_widget_set_sensitive (text_view, FALSE);
+		gtk_text_buffer_get_start_iter (buffer, &start);
+		gtk_text_buffer_get_end_iter (buffer, &end);
+		text = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);       
+		gtk_text_buffer_set_modified (buffer, FALSE);
+		gtk_widget_set_sensitive (text_view, TRUE);
 	
-	if(curr_name[0]=='/'){
-		g_file_set_contents (curr_name, text, -1, &err);
-	}else{
-		GtkWidget *dialog;
-		dialog = gtk_file_chooser_dialog_new ("Save File", NULL, GTK_FILE_CHOOSER_ACTION_SAVE, "Cancel", GTK_RESPONSE_CANCEL,"Open", GTK_RESPONSE_ACCEPT, NULL);
+		if(curr_name[0]=='/'){
+			g_file_set_contents (curr_name, text, -1, &err);
+		}else{
+			GtkWidget *dialog;
+			dialog = gtk_file_chooser_dialog_new ("Save File", NULL, GTK_FILE_CHOOSER_ACTION_SAVE, "Cancel", GTK_RESPONSE_CANCEL,"Open", GTK_RESPONSE_ACCEPT, NULL);
 	
-		if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
-			gchar *filename, *dir_name;
-			filename = gtk_file_chooser_get_current_name (GTK_FILE_CHOOSER (dialog));
-			dir_name = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
-			gchar* path = g_strconcat(dir_name,"/",filename,NULL);
-			g_file_set_contents (path, text, -1, &err);
-			GValue a = G_VALUE_INIT;
-			GValue b = G_VALUE_INIT;
-			g_value_init (&a, G_TYPE_STRING);
-			g_value_set_static_string (&a, g_strdup(filename));
-			g_value_init (&b, G_TYPE_STRING);
-			g_value_set_static_string (&b, g_strdup(path));
-			gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "name", &b); 
-			gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "title", &a); 			
+			if (gtk_dialog_run (GTK_DIALOG (dialog)) == GTK_RESPONSE_ACCEPT){
+				gchar *filename, *dir_name;
+				filename = gtk_file_chooser_get_current_name (GTK_FILE_CHOOSER (dialog));
+				dir_name = gtk_file_chooser_get_current_folder (GTK_FILE_CHOOSER (dialog));
+				gchar* path = g_strconcat(dir_name,"/",filename,NULL);
+				g_file_set_contents (path, text, -1, &err);
+				GValue a = G_VALUE_INIT;
+				GValue b = G_VALUE_INIT;
+				g_value_init (&a, G_TYPE_STRING);
+				g_value_set_static_string (&a, g_strdup(filename));
+				g_value_init (&b, G_TYPE_STRING);
+				g_value_set_static_string (&b, g_strdup(path));
+				gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "name", &b); 
+				gtk_container_child_set_property((GtkContainer *)gstack,scrolledwindow, "title", &a); 			
 			
+			}
+			gtk_widget_destroy (dialog);
 		}
-		gtk_widget_destroy (dialog);
+		g_free(text);
+		gtk_widget_show_all (window);	
 	}
-	g_free(text);
-	gtk_widget_show_all (window);	
 }
 
 void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
