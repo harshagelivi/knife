@@ -27,6 +27,9 @@ GtkSourceBuffer * chat_source_buffer;
 
 //By Madhavi: start
 GtkWidget  *connect_box, *connect_ip_label, *connect_port_label, *connect_box_button, *connect_ip_entry, *connect_port_entry;
+GtkWidget  *menu_bar,*file_menu, *file_item, *view_menu, *view_item, *font_item, *quit_item, *edit_item, *edit_menu, *color_item, *bg_color_item;
+PangoFontDescription * font_desc;
+GdkRGBA color, bgcolor;
 gchar  server_ip1[INET6_ADDRSTRLEN];
 //By Madhavi: end
 

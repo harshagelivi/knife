@@ -11,6 +11,39 @@ int main(int argc, char **argv){
 	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
 	gtk_container_add (GTK_CONTAINER (window), box);
 
+//By Madhavi: start
+	initialise_font_and_color();
+	
+	menu_bar = gtk_menu_bar_new ();
+	file_menu = gtk_menu_new ();
+	view_menu = gtk_menu_new ();
+	edit_menu = gtk_menu_new ();
+	
+	font_item = gtk_menu_item_new_with_label ("Choose Font");
+	color_item = gtk_menu_item_new_with_label ("Choose Color");
+	bg_color_item = gtk_menu_item_new_with_label ("Choose Background");
+	gtk_menu_shell_append ((GtkMenuShell *) (edit_menu), font_item);
+	gtk_menu_shell_append ((GtkMenuShell *) (edit_menu), color_item);
+	gtk_menu_shell_append ((GtkMenuShell *) (edit_menu), bg_color_item);
+	
+	quit_item = gtk_menu_item_new_with_label ("Quit");
+	gtk_menu_shell_append ((GtkMenuShell *)(file_menu), quit_item);
+	
+	file_item = gtk_menu_item_new_with_label ("File");
+	view_item = gtk_menu_item_new_with_label ("View");
+	edit_item = gtk_menu_item_new_with_label ("Edit");
+	
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (file_item), file_menu);	
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (view_item), view_menu);	
+	gtk_menu_item_set_submenu (GTK_MENU_ITEM (edit_item), edit_menu);	
+
+	gtk_container_add (GTK_CONTAINER (menu_bar), file_item);
+	gtk_container_add (GTK_CONTAINER (menu_bar), view_item);
+	gtk_container_add (GTK_CONTAINER (menu_bar), edit_item);
+
+	gtk_box_pack_start ((GtkBox *)box, menu_bar, FALSE, FALSE, 10);
+//By Madhavi: end
+
 	widget_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
 	gtk_box_pack_start ((GtkBox *)box, widget_box, FALSE, FALSE, 10);
 	
@@ -21,6 +54,11 @@ int main(int argc, char **argv){
 	gtk_stack_switcher_set_stack ((GtkStackSwitcher *)switcher,(GtkStack *)gstack);
 	gtk_stack_set_transition_type ((GtkStack *)gstack, GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
 	gtk_stack_set_transition_duration ((GtkStack *)gstack, 700);
+
+	g_signal_connect ( G_OBJECT( font_item), "activate",   G_CALLBACK(on_font_menu_selected), box);					//By Madhavi
+	g_signal_connect ( G_OBJECT( color_item), "activate",   G_CALLBACK(on_color_menu_selected), box);				//By Madhavi
+	g_signal_connect ( G_OBJECT( bg_color_item), "activate",   G_CALLBACK(on_background_color_menu_selected), box);	//By Madhavi
+	g_signal_connect ( G_OBJECT( quit_item), "activate",   G_CALLBACK(destroy_signal), NULL);						//By Madhavi
 	
 	GtkWidget * add_button = gtk_button_new_from_icon_name ("list-add",GTK_ICON_SIZE_BUTTON);
 	g_signal_connect ((GtkButton *)(add_button), "clicked", G_CALLBACK (on_button_clicked), NULL);
@@ -33,7 +71,11 @@ int main(int argc, char **argv){
 	GtkWidget * save_button = gtk_button_new_from_icon_name ("document-save",GTK_ICON_SIZE_BUTTON);
 	g_signal_connect ((GtkButton *)(save_button), "clicked", G_CALLBACK (on_save_button_clicked), NULL);
 	gtk_box_pack_start ((GtkBox *)widget_box, save_button, FALSE, FALSE, 10);
-
+//By Madhavi: start
+	GtkWidget * remove_page_button = gtk_button_new_with_label (" X ");
+	g_signal_connect ((GtkButton *)(remove_page_button), "clicked", G_CALLBACK (on_remove_page_button_clicked), NULL);
+	gtk_box_pack_start ((GtkBox *)widget_box, remove_page_button, FALSE, FALSE, 10);
+//By Madhavi: end
 	comment_button=gtk_button_new_with_label("/*  */");
 	g_signal_connect ((GtkButton *)(comment_button), "clicked", G_CALLBACK (on_comment_button_clicked), NULL);
 	gtk_box_pack_start ((GtkBox *)widget_box, comment_button, FALSE, FALSE, 10);
@@ -71,7 +113,6 @@ int main(int argc, char **argv){
 	gtk_widget_override_background_color( (GtkWidget *)sep_label, GTK_STATE_FLAG_DIR_LTR, &color);	
 	gtk_box_pack_start ((GtkBox *)box, scrolledwindow, FALSE, FALSE, 0);	
 
-
 //By Madhavi: start
 	connect_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 00);
 	connect_ip_label = gtk_label_new(" IP Address: ");
@@ -79,20 +120,18 @@ int main(int argc, char **argv){
 	connect_ip_entry=gtk_entry_new ();
 	connect_port_entry=gtk_entry_new ();
 	connect_box_button = gtk_button_new_with_label(" Connect ");
-	gtk_entry_set_text ((GtkEntry *) connect_ip_entry, "localhost");
-	gtk_entry_set_text ((GtkEntry *) connect_port_entry, "12345");
+	
 	gtk_box_pack_start((GtkBox *)connect_box, connect_ip_label, FALSE, FALSE, 0);
 	gtk_box_pack_start((GtkBox *)connect_box, connect_ip_entry, FALSE, FALSE, 0);
 	gtk_box_pack_start((GtkBox *)connect_box, connect_port_label, FALSE, FALSE,0);
 	gtk_box_pack_start((GtkBox *)connect_box, connect_port_entry, FALSE, FALSE,0);
 	gtk_box_pack_start((GtkBox *)connect_box, connect_box_button, FALSE, FALSE,0);
 	gtk_box_set_spacing ((GtkBox *)connect_box,40);
+
 	gtk_box_pack_start ((GtkBox *)box, connect_box, FALSE, FALSE, 0);	
 	g_signal_connect ((GtkButton *)(connect_box_button), "clicked", G_CALLBACK (on_connect_box_button_clicked), connect_ip_entry);
 //By Madhavi: end
 
-
-	
 	pthread_t server_thread;
 	pthread_create(&server_thread, NULL, server_init, NULL);
 

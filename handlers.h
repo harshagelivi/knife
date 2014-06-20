@@ -159,6 +159,7 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 			gtk_source_view_set_show_line_numbers ((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
+			gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);							//by madhavi
 			gtk_text_buffer_set_text ((GtkTextBuffer *)source_buffer, (const gchar *)(buff), -1);
 			GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 			
@@ -186,6 +187,12 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 				gtk_widget_show_all (window);	
 				gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)curr_scrolledwindow);
 			}
+//By Madhavi:start
+			gtk_widget_override_font ((GtkWidget *) source_view, font_desc);										//by madhavi
+			gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_NORMAL,&color);					//by madhavi
+			gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_NORMAL,&bgcolor);		//by madhavi
+//By Madhavi:end
+
 		}		
 	}
 	gtk_widget_destroy (dialog);
@@ -208,6 +215,7 @@ void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	gtk_source_view_set_show_line_numbers ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
+	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);									//by madhavi
 	GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
 	gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, g_strdup_printf ("New %d",tab_counter), g_strdup_printf ("New %d",tab_counter));
@@ -216,15 +224,94 @@ void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	tab_counter++;	
 	gtk_widget_show_all (window);		
 	gtk_stack_set_visible_child ((GtkStack *)gstack, (GtkWidget *)scrolledwindow);
+//by Madhavi: start
+	gtk_widget_override_font ((GtkWidget *) source_view, (PangoFontDescription*) font_desc);							//by madhavi
+	gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_NORMAL,&color);							//by madhavi
+	gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_NORMAL, &bgcolor);				//by madhavi
+//by Madhavi: end
+
 }
 
 
 // By Madhavi:	start
+
+void initialise_font_and_color(){
+	color.red=0.0;
+	color.green=0.0;
+	color.blue=0.0;
+	color.alpha=1.0;
+	bgcolor.red=1.0;
+	bgcolor.green=1.0;
+	bgcolor.blue=1.0;
+	bgcolor.alpha=1.0;
+}
+
 void on_connect_box_button_clicked(GtkButton * conn_box_button, GtkEntry * connect_ip_entry){
 	const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
 	const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
 	server_port = atoi(port);
 	strcpy(server_ip1,ip);
-//	cout<<server_ip1<<"	"<<server_port<<"\n";
+}
+
+void on_font_menu_selected(GtkMenuItem * menu_i,GtkWidget * box){
+	GtkWidget * dialog, *font_chooser;
+	GtkWidget * scrolledwindow, * textview;
+	gint pageno;
+	dialog = 	gtk_font_chooser_dialog_new ("Choose Font",  NULL);
+	if(gtk_dialog_run (GTK_DIALOG (dialog))!=GTK_RESPONSE_CANCEL){
+		font_desc = gtk_font_chooser_get_font_desc ((GtkFontChooser *) dialog);
+		GtkWidget * curr_scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+		if(curr_scrolledwindow){
+			GtkWidget * curr_text_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
+			gtk_widget_override_font ((GtkWidget *) curr_text_view, (PangoFontDescription*) font_desc);
+		}
+	}
+	gtk_widget_destroy (dialog);
+	gtk_widget_show_all(window);
+}
+
+
+void on_color_menu_selected(GtkMenuItem * menu_i,GtkWidget *box){
+	GtkWidget * dialog;
+	GtkWidget * scrolledwindow, * textview;
+	gint pageno;
+	dialog = gtk_color_chooser_dialog_new ("Choose your color", NULL);
+	if(gtk_dialog_run (GTK_DIALOG (dialog))!=GTK_RESPONSE_CANCEL){
+		gtk_color_chooser_get_rgba ((GtkColorChooser *)dialog, &color);	
+		GtkWidget * curr_scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+		if(curr_scrolledwindow){
+			GtkWidget * curr_text_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
+			gtk_widget_override_color((GtkWidget *) curr_text_view, GTK_STATE_FLAG_NORMAL,&color);
+		}
+	}
+	gtk_widget_destroy (dialog);
+	gtk_widget_show_all(window);
+}
+
+
+void on_background_color_menu_selected(GtkMenuItem * menu_i,GtkWidget *box){
+	GtkWidget * dialog;
+	GtkWidget * scrolledwindow, * textview;
+	gint pageno;
+	dialog = gtk_color_chooser_dialog_new ("Choose your color", NULL);
+	if(gtk_dialog_run (GTK_DIALOG (dialog))!=GTK_RESPONSE_CANCEL){
+		gtk_color_chooser_get_rgba ((GtkColorChooser *)dialog, &bgcolor);
+		GtkWidget * curr_scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+		if(curr_scrolledwindow){	
+			GtkWidget * curr_text_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
+			gtk_widget_override_background_color((GtkWidget *) curr_text_view, GTK_STATE_FLAG_NORMAL,&bgcolor);
+		}
+	}
+	gtk_widget_destroy (dialog);
+	gtk_widget_show_all(window);
+}
+
+
+void on_remove_page_button_clicked (GtkToolButton * tool_button, gpointer data){
+	if(tab_counter>1){
+		GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+		gtk_widget_destroy ((GtkWidget *) scrolledwindow);
+		tab_counter--;
+	}
 }
 //By Madhavi: end
