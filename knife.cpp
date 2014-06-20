@@ -8,7 +8,7 @@ int main(int argc, char **argv){
 	gtk_window_set_title (GTK_WINDOW (window), "knife editor 2.0");
 	g_signal_connect (G_OBJECT (window), "destroy", G_CALLBACK (destroy_signal), NULL);
 	
-	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);
+	box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
 	gtk_container_add (GTK_CONTAINER (window), box);
 
 //By Madhavi: start
@@ -41,7 +41,7 @@ int main(int argc, char **argv){
 	gtk_container_add (GTK_CONTAINER (menu_bar), view_item);
 	gtk_container_add (GTK_CONTAINER (menu_bar), edit_item);
 
-	gtk_box_pack_start ((GtkBox *)box, menu_bar, FALSE, FALSE, 10);
+	gtk_box_pack_start ((GtkBox *)box, menu_bar, FALSE, FALSE, 0);
 //By Madhavi: end
 
 	widget_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 10);
