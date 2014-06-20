@@ -55,11 +55,12 @@ int main(int argc, char **argv){
 	gtk_stack_set_transition_type ((GtkStack *)gstack, GTK_STACK_TRANSITION_TYPE_SLIDE_LEFT_RIGHT);
 	gtk_stack_set_transition_duration ((GtkStack *)gstack, 700);
 
-	g_signal_connect ( G_OBJECT( font_item), "activate",   G_CALLBACK(on_font_menu_selected), box);					//By Madhavi
-	g_signal_connect ( G_OBJECT( color_item), "activate",   G_CALLBACK(on_color_menu_selected), box);				//By Madhavi
-	g_signal_connect ( G_OBJECT( bg_color_item), "activate",   G_CALLBACK(on_background_color_menu_selected), box);	//By Madhavi
-	g_signal_connect ( G_OBJECT( quit_item), "activate",   G_CALLBACK(destroy_signal), NULL);						//By Madhavi
-	
+//By Madhavi: start
+	g_signal_connect ( G_OBJECT( font_item), "activate",   G_CALLBACK(on_font_menu_selected),box);
+	g_signal_connect ( G_OBJECT( color_item), "activate",   G_CALLBACK(on_color_menu_selected), box);
+	g_signal_connect ( G_OBJECT( bg_color_item), "activate",   G_CALLBACK(on_background_color_menu_selected), box);
+	g_signal_connect ( G_OBJECT( quit_item), "activate",   G_CALLBACK(destroy_signal), NULL);
+//By Madhavi: end
 	GtkWidget * add_button = gtk_button_new_from_icon_name ("list-add",GTK_ICON_SIZE_BUTTON);
 	g_signal_connect ((GtkButton *)(add_button), "clicked", G_CALLBACK (on_button_clicked), NULL);
 	gtk_box_pack_start ((GtkBox *)widget_box, add_button, FALSE, FALSE, 10);
@@ -72,7 +73,7 @@ int main(int argc, char **argv){
 	g_signal_connect ((GtkButton *)(save_button), "clicked", G_CALLBACK (on_save_button_clicked), NULL);
 	gtk_box_pack_start ((GtkBox *)widget_box, save_button, FALSE, FALSE, 10);
 //By Madhavi: start
-	GtkWidget * remove_page_button = gtk_button_new_with_label (" X ");
+	GtkWidget * remove_page_button = gtk_button_new_from_icon_name ("window-close",GTK_ICON_SIZE_BUTTON);
 	g_signal_connect ((GtkButton *)(remove_page_button), "clicked", G_CALLBACK (on_remove_page_button_clicked), NULL);
 	gtk_box_pack_start ((GtkBox *)widget_box, remove_page_button, FALSE, FALSE, 10);
 //By Madhavi: end
