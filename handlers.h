@@ -15,12 +15,16 @@ gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuff
 			perror("send");	
 		}else{
 			if(not_empty(text)){
-				g_print("client: sent '%s'", text);
+				g_print("client: sent '%s'\n", text);
+
 				GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
 				gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
 				gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+				GdkRGBA label_color;
+				gdk_rgba_parse (&label_color, "green");
+				gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
 				gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-				gtk_widget_show (label);					
+				gtk_widget_show_all (window);					
 			}			
 		}
 		return TRUE;
@@ -166,6 +170,7 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 			gtk_widget_override_font ((GtkWidget *) source_view, font_desc);
 			gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
 			gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+		//	gtk_widget_set_sensitive ((GtkWidget *)source_view,TRUE);
 //By Madhavi:end
 			
 			gtk_text_buffer_set_text ((GtkTextBuffer *)source_buffer, (const gchar *)(buff), -1);
@@ -205,11 +210,13 @@ void on_connect_switch_activate (GtkSwitch * connect_switch, gpointer data){
 //	gtk_dialog_run( (GtkDialog *)ip_dialog);
 	if(gtk_switch_get_active ((GtkSwitch *)connect_switch)){
 		if(client_flag) return;
+		const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
+		const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
+		friend_port = atoi(port);
+		strcpy(friend_ip,ip);
 		client_flag=client_init() ? 1 : 0;
 	}else{
-		client_flag=0;
-		close(client_sock_fd);
-		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, FALSE);		
+		end_client_connection();
 	}	
 }
 void on_button_clicked (GtkToolButton * tool_button, gpointer data){
@@ -218,7 +225,7 @@ void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	gtk_source_view_set_show_line_numbers ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
-	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);									//by madhavi
+	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);
 	GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
 	gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, g_strdup_printf ("New %d",tab_counter), g_strdup_printf ("New %d",tab_counter));
@@ -247,13 +254,6 @@ void initialise_font_and_color(){
 	bgcolor.green=1.0;
 	bgcolor.blue=1.0;
 	bgcolor.alpha=1.0;
-}
-
-void on_connect_box_button_clicked(GtkButton * conn_box_button, GtkEntry * connect_ip_entry){
-	const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
-	const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
-	server_port = atoi(port);
-	strcpy(server_ip1,ip);
 }
 
 void on_font_menu_selected(GtkMenuItem * menu_i,GtkWidget * box){

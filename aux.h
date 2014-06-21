@@ -20,7 +20,7 @@ gboolean not_empty(gchar * buff){
 }
 void * server_init(void * ptr){
 	gint server_sock_fd, new_fd, yes=1,bytesnum; 
-	struct sockaddr_in server_addr, client_addr;	
+	struct sockaddr_in server_addr, friend_addr;	
 	gchar buf[MAXDATA];
 	if((server_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("server: socket");
@@ -41,22 +41,22 @@ void * server_init(void * ptr){
 		if (listen(server_sock_fd, BACKLOG) == -1) {
 			perror("listen");
 		}else{
-			g_print("server: waiting for connections...\n");
 			socklen_t sin_size;
-			sin_size = sizeof(client_addr);
+			sin_size = sizeof(friend_addr);
 			char s[INET6_ADDRSTRLEN];
 			while(1){
-				new_fd = accept(server_sock_fd, (struct sockaddr *)&client_addr, &sin_size);
+				g_print("server: waiting for connections...\n");
+				new_fd = accept(server_sock_fd, (struct sockaddr *)&friend_addr, &sin_size);
 				if (new_fd == -1) {
 					perror("accept");
 				}else{
-					inet_ntop(client_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
-					printf("server: got connection from %s\n", s);
+					inet_ntop(friend_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
+					g_print("server: got connection from %s\n", s);
 					while(1){
 						if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
 							perror("recv");
-							exit(1);
-						}else if(!bytesnum){
+							break;
+						}else if((!bytesnum)){
 							break;
 						}else{
 							buf[bytesnum] = '\0';
@@ -65,6 +65,9 @@ void * server_init(void * ptr){
 								GtkWidget * label = gtk_label_new (g_strconcat("Friend : ", buf, NULL));
 								gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
 								gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+								GdkRGBA label_color;
+								gdk_rgba_parse (&label_color, "blue");
+								gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
 								gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
 								gtk_widget_show (label);					
 							}
@@ -72,15 +75,30 @@ void * server_init(void * ptr){
 					}
 					
 				}
+				g_print("server: connection ended with %s\n", s);
+				end_client_connection();
 				close(new_fd);
 			}
 		}
 	}
 	g_print("thread done\n");	
 }
+void end_client_connection(){
+	if(client_flag){
+		client_flag=0;
+		close(client_sock_fd);
+		g_print("client: ended connection with %s\n", friend_ip);
+		gtk_switch_set_active ((GtkSwitch *)connect_switch, FALSE);	
+		gtk_label_set_text ((GtkLabel *)sep_label, "Tell me where can i find your friend");
+		gtk_widget_set_sensitive ((GtkWidget *) connect_ip_entry, TRUE);	
+		gtk_widget_set_sensitive ((GtkWidget *) connect_port_entry, TRUE);
+		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, FALSE);					
+	}	
+}	
+
 int client_init(){
 		if((client_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-			perror("server: socket");
+			perror("client: socket");
 			return 0;
 		}
 
@@ -88,18 +106,21 @@ int client_init(){
 			perror("setsockopt");
 			return 0;
 		}
-		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(client_port);
+		friend_addr.sin_family = AF_INET;
+		friend_addr.sin_port = htons(friend_port);
 
-		inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr.s_addr);
+		inet_pton(AF_INET, friend_ip, &friend_addr.sin_addr.s_addr);
 	
-		if (connect(client_sock_fd, (struct sockaddr *)&server_addr, sizeof server_addr) == -1) {
+		if (connect(client_sock_fd, (struct sockaddr *)&friend_addr, sizeof friend_addr) == -1) {
 			close(client_sock_fd);
 			perror("client: connect");
 			return 0;
 		}
-		inet_ntop(server_addr.sin_family, (void *)&server_addr.sin_addr,  server_ip, sizeof  server_ip);		
-		g_print("client: connected to %s\n",  server_ip);
+		inet_ntop(friend_addr.sin_family, (void *)&friend_addr.sin_addr,  friend_ip, sizeof  friend_ip);		
+		g_print("client: connected to %s\n",  friend_ip);
+		gtk_label_set_text ((GtkLabel *)sep_label, g_strdup_printf("You are connected to %s at %d",friend_ip, friend_port));
+		gtk_widget_set_sensitive ((GtkWidget *) connect_ip_entry, FALSE);	
+		gtk_widget_set_sensitive ((GtkWidget *) connect_port_entry, FALSE);
 		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, TRUE);
 		return 1;
 }
