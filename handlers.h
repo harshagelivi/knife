@@ -166,10 +166,11 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 			gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);
+			gtk_text_view_set_wrap_mode ((GtkTextView *)source_view, GTK_WRAP_WORD);
 //By Madhavi:start
 			gtk_widget_override_font ((GtkWidget *) source_view, font_desc);
-			gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
-			gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+		//	gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
+		//	gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
 		//	gtk_widget_set_sensitive ((GtkWidget *)source_view,TRUE);
 //By Madhavi:end
 			
@@ -226,14 +227,15 @@ void on_button_clicked (GtkToolButton * tool_button, gpointer data){
 	gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);
+	gtk_text_view_set_wrap_mode ((GtkTextView *)source_view, GTK_WRAP_WORD);
 	GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
 	gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, g_strdup_printf ("New %d",tab_counter), g_strdup_printf ("New %d",tab_counter));
 
 //by Madhavi: start
 	gtk_widget_override_font ((GtkWidget *) source_view, (PangoFontDescription*) font_desc);
-	gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
-	gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+	//gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
+	//gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
 //by Madhavi: end
 
 	tab_counter++;	
