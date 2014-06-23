@@ -38,7 +38,7 @@ void * server_init(void * ptr){
 		close(server_sock_fd);
 		perror("server: bind");
 	}else{
-		if (listen(server_sock_fd, backlogs) == -1) {
+		if (listen(server_sock_fd, backlog) == -1) {
 			perror("listen");
 		}else{
 			socklen_t sin_size;
