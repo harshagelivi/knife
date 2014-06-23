@@ -15,13 +15,13 @@
 #include <iostream>
 using namespace std;
 #define MAXDATA 1000
-#define BACKLOG 10
+
 
 gint server_port = 3490, friend_port = 3493;
 gchar  server_ip[INET6_ADDRSTRLEN], friend_ip[INET6_ADDRSTRLEN];
 gint client_sock_fd, bytesnum, yes=1, client_flag;
 struct sockaddr_in friend_addr;
-
+pthread_mutex_t mutex_chat_box = PTHREAD_MUTEX_INITIALIZER;
 GtkWidget   *search_bar,*search_entry, *add_button, *open_button, *comment_button, *connect_switch, *window, * save_button, *box, *gstack, *switcher, *chat_box, *chat_source_view, *connect_button, * widget_box, *middle_box, *sep_label;
 GtkSourceBuffer * chat_source_buffer;
 

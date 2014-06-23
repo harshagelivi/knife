@@ -23,8 +23,10 @@ gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuff
 				GdkRGBA label_color;
 				gdk_rgba_parse (&label_color, "green");
 				gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+				pthread_mutex_lock( &mutex_chat_box );
 				gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
 				gtk_widget_show_all (window);					
+				pthread_mutex_unlock( &mutex_chat_box );
 			}			
 		}
 		return TRUE;

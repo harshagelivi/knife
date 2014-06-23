@@ -19,7 +19,7 @@ gboolean not_empty(gchar * buff){
 	return FALSE;
 }
 void * server_init(void * ptr){
-	gint server_sock_fd, new_fd, yes=1,bytesnum; 
+	gint server_sock_fd, new_fd, yes=1,bytesnum,backlog=10; 
 	struct sockaddr_in server_addr, friend_addr;	
 	gchar buf[MAXDATA];
 	if((server_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
@@ -38,7 +38,7 @@ void * server_init(void * ptr){
 		close(server_sock_fd);
 		perror("server: bind");
 	}else{
-		if (listen(server_sock_fd, BACKLOG) == -1) {
+		if (listen(server_sock_fd, backlogs) == -1) {
 			perror("listen");
 		}else{
 			socklen_t sin_size;
@@ -68,8 +68,11 @@ void * server_init(void * ptr){
 								GdkRGBA label_color;
 								gdk_rgba_parse (&label_color, "blue");
 								gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+								gtk_widget_show (label);
+								pthread_mutex_lock( &mutex_chat_box );
 								gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-								gtk_widget_show (label);					
+								pthread_mutex_unlock( &mutex_chat_box );
+													
 							}
 						}
 					}
