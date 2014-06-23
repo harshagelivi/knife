@@ -54,7 +54,7 @@ void * server_init(void * ptr){
 					system(g_strdup_printf ("notify-send '%s would like to connect to you'", s));
 					GtkWidget *dialog;
 					dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,	GTK_MESSAGE_QUESTION, 
-					GTK_BUTTONS_YES_NO, g_strdup_printf("%s would like to connect to you. Do you accept?", s));
+					GTK_BUTTONS_YES_NO, "%s would like to connect to you. Do you accept?", s);
 					gtk_window_set_title(GTK_WINDOW(dialog), "New Conection request");
 					if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
 						gtk_widget_destroy(dialog);					
