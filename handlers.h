@@ -3,31 +3,35 @@ void destroy_signal(GtkWidget * widget, gpointer data){
 }
 gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * buffer){
 	if(event->keyval==GDK_KEY_KP_Enter || event->keyval==GDK_KEY_Return){
-		GtkTextIter start,end;
-		gchar *text;
+		if(client_flag){
+			GtkTextIter start,end;
+			gchar *text;
 	
-		gtk_text_buffer_get_start_iter ((GtkTextBuffer *)buffer, &start);
-		gtk_text_buffer_get_end_iter ((GtkTextBuffer *)buffer, &end);
-		text = gtk_text_buffer_get_text ((GtkTextBuffer *)buffer, &start, &end, FALSE);    
-		gtk_text_buffer_set_text( (GtkTextBuffer *)buffer, "", -1);		   
+			gtk_text_buffer_get_start_iter ((GtkTextBuffer *)buffer, &start);
+			gtk_text_buffer_get_end_iter ((GtkTextBuffer *)buffer, &end);
+			text = gtk_text_buffer_get_text ((GtkTextBuffer *)buffer, &start, &end, FALSE);    
+			gtk_text_buffer_set_text( (GtkTextBuffer *)buffer, "", -1);		   
 
-		if (send(client_sock_fd, text, strlen(text), 0) == -1){
-			perror("send");	
-		}else{
-			if(not_empty(text)){
-				g_print("client: sent '%s'\n", text);
+			if (send(client_sock_fd, text, strlen(text), 0) == -1){
+				perror("send");	
+				end_client_connection();		
+			}else{
+				if(not_empty(text)){
+					g_print("client: sent '%s'\n", text);
 
-				GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
-				gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-				gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-				GdkRGBA label_color;
-				gdk_rgba_parse (&label_color, "green");
-				gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
-				pthread_mutex_lock( &mutex_chat_box );
-				gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-				gtk_widget_show_all (window);					
-				pthread_mutex_unlock( &mutex_chat_box );
-			}			
+					GtkWidget * label = gtk_label_new (text);
+					gtk_misc_set_alignment ((GtkMisc *)label, 0.9, 0);
+					gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+					gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+					GdkRGBA label_color;
+					gdk_rgba_parse (&label_color, "green");
+					gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+					pthread_mutex_lock( &mutex_chat_box );
+					gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+					gtk_widget_show_all (window);					
+					pthread_mutex_unlock( &mutex_chat_box );
+				}			
+			}
 		}
 		return TRUE;
 	}else{

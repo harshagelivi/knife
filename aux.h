@@ -51,31 +51,46 @@ void * server_init(void * ptr){
 					perror("accept");
 				}else{
 					inet_ntop(friend_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
-					g_print("server: got connection from %s\n", s);
-					while(1){
-						if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
-							perror("recv");
-							break;
-						}else if((!bytesnum)){
-							break;
-						}else{
-							buf[bytesnum] = '\0';
-							g_print("server: received '%s'\n",buf);	
-							if(not_empty(buf)){
-								GtkWidget * label = gtk_label_new (g_strconcat("Friend : ", buf, NULL));
-								gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-								gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-								GdkRGBA label_color;
-								gdk_rgba_parse (&label_color, "blue");
-								gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
-								gtk_widget_show (label);
-								pthread_mutex_lock( &mutex_chat_box );
-								gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-								pthread_mutex_unlock( &mutex_chat_box );
+					system(g_strdup_printf ("notify-send '%s would like to connect to you'", s));
+					GtkWidget *dialog;
+					dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,	GTK_MESSAGE_QUESTION, 
+					GTK_BUTTONS_YES_NO, g_strdup_printf("%s would like to connect to you. Do you accept?", s));
+					gtk_window_set_title(GTK_WINDOW(dialog), "New Conection request");
+					if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
+						gtk_widget_destroy(dialog);					
+						g_print("server: got connection from %s\n", s);
+						while(1){
+							if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
+								perror("recv");
+								break;
+							}else if((!bytesnum)){
+								break;
+							}else{
+								buf[bytesnum] = '\0';
+								g_print("server: received '%s'\n",buf);	
+								if(not_empty(buf)){
+									GtkWidget * label = gtk_label_new (buf);
+									gtk_misc_set_alignment ((GtkMisc *)label, 0, 0);
+									gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+									gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+									GdkRGBA label_color;
+									gdk_rgba_parse (&label_color, "blue");
+									gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+									gtk_widget_show (label);
+									pthread_mutex_lock( &mutex_chat_box );
+									gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+									pthread_mutex_unlock( &mutex_chat_box );
 													
+								}
 							}
 						}
-					}
+					}else{
+						g_print("server: rejected connection with %s\n", s);
+						close(new_fd);
+						//end_client_connection();  //this is needed when connected to a loopback interface
+						gtk_widget_destroy(dialog);					
+						continue;
+					}	
 					
 				}
 				g_print("server: connection ended with %s\n", s);

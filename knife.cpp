@@ -2,6 +2,7 @@
 #include "aux.h"
 #include "handlers.h"
 int main(int argc, char **argv){
+	XInitThreads();
 	gtk_init (&argc, &argv);
 
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
