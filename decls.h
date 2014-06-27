@@ -37,12 +37,12 @@ gchar  server_ip1[INET6_ADDRSTRLEN];
 
 static gint tab_counter=1;
 void destroy_signal(GtkWidget * widget, gpointer data);
-void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data);
-void on_open_button_clicked (GtkToolButton * tool_button, gpointer data);
-void on_save_button_clicked (GtkToolButton * tool_button, gpointer data);
+void on_comment_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
+void on_open_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
+void on_save_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
 void on_connect_switch_activate(GtkSwitch *, gpointer data);
-void on_button_clicked (GtkToolButton * tool_button, gpointer data);
-gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data);
+void on_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
+gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, GtkStack *);
 gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * source_buffer);
 
 gchar * get_only_name(gchar * dir_name, gchar * file_name);

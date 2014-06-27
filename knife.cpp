@@ -4,7 +4,7 @@
 int main(int argc, char **argv){
 	XInitThreads();
 	gtk_init (&argc, &argv);
-
+	GtkWidget * gstack;
 	window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_title (GTK_WINDOW (window), "knife editor 2.0");
 	g_signal_connect (G_OBJECT (window), "destroy", G_CALLBACK (destroy_signal), NULL);
@@ -49,7 +49,7 @@ int main(int argc, char **argv){
 	gtk_box_pack_start ((GtkBox *)box, widget_box, FALSE, FALSE, 10);
 	
 	gstack=gtk_stack_new ();
-	g_signal_connect (G_OBJECT (window), "key_press_event", G_CALLBACK (on_key_press), NULL);	
+	g_signal_connect (G_OBJECT (window), "key_press_event", G_CALLBACK (on_key_press), gstack);	
 	switcher=gtk_stack_switcher_new ();
 	gtk_box_pack_start ((GtkBox *)box, switcher, FALSE, FALSE, 0);
 	gtk_stack_switcher_set_stack ((GtkStackSwitcher *)switcher,(GtkStack *)gstack);
@@ -63,23 +63,23 @@ int main(int argc, char **argv){
 	g_signal_connect ( G_OBJECT( quit_item), "activate",   G_CALLBACK(destroy_signal), NULL);
 //By Madhavi: end
 	GtkWidget * add_button = gtk_button_new_from_icon_name ("list-add",GTK_ICON_SIZE_BUTTON);
-	g_signal_connect ((GtkButton *)(add_button), "clicked", G_CALLBACK (on_button_clicked), NULL);
+	g_signal_connect ((GtkButton *)(add_button), "clicked", G_CALLBACK (on_button_clicked), (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, add_button, FALSE, FALSE, 10);
 		
 	GtkWidget * open_button = gtk_button_new_from_icon_name ("document-open",GTK_ICON_SIZE_BUTTON);
-	g_signal_connect ((GtkButton *)(open_button), "clicked", G_CALLBACK (on_open_button_clicked), NULL);
+	g_signal_connect ((GtkButton *)(open_button), "clicked", G_CALLBACK (on_open_button_clicked), (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, open_button, FALSE, FALSE, 10);
 
 	GtkWidget * save_button = gtk_button_new_from_icon_name ("document-save",GTK_ICON_SIZE_BUTTON);
-	g_signal_connect ((GtkButton *)(save_button), "clicked", G_CALLBACK (on_save_button_clicked), NULL);
+	g_signal_connect ((GtkButton *)(save_button), "clicked", G_CALLBACK (on_save_button_clicked), (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, save_button, FALSE, FALSE, 10);
 //By Madhavi: start
 	GtkWidget * remove_page_button = gtk_button_new_from_icon_name ("window-close",GTK_ICON_SIZE_BUTTON);
-	g_signal_connect ((GtkButton *)(remove_page_button), "clicked", G_CALLBACK (on_remove_page_button_clicked), NULL);
+	g_signal_connect ((GtkButton *)(remove_page_button), "clicked", G_CALLBACK (on_remove_page_button_clicked), (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, remove_page_button, FALSE, FALSE, 10);
 //By Madhavi: end
 	comment_button=gtk_button_new_with_label("/*  */");
-	g_signal_connect ((GtkButton *)(comment_button), "clicked", G_CALLBACK (on_comment_button_clicked), NULL);
+	g_signal_connect ((GtkButton *)(comment_button), "clicked", G_CALLBACK (on_comment_button_clicked), (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, comment_button, FALSE, FALSE, 10);
 	
 	chat_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 10);

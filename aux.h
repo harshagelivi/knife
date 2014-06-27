@@ -51,7 +51,7 @@ void * server_init(void * ptr){
 					perror("accept");
 				}else{
 					inet_ntop(friend_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
-					system(g_strdup_printf ("notify-send '%s would like to connect to you'", s));
+					//system(g_strdup_printf ("notify-send '%s would like to connect to you'", s));
 					GtkWidget *dialog;
 					dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,	GTK_MESSAGE_QUESTION, 
 					GTK_BUTTONS_YES_NO, "%s would like to connect to you. Do you accept?", s);
@@ -59,6 +59,10 @@ void * server_init(void * ptr){
 					if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
 						gtk_widget_destroy(dialog);					
 						g_print("server: got connection from %s\n", s);
+						strcpy(friend_ip, s);
+						friend_port=friend_addr.sin_port;
+						client_flag=client_init()?1:0;
+
 						while(1){
 							if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
 								perror("recv");
@@ -115,6 +119,7 @@ void end_client_connection(){
 }	
 
 int client_init(){
+	if(client_flag) return 1; //used during loopback connection
 		if((client_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 			perror("client: socket");
 			return 0;

@@ -40,7 +40,7 @@ gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuff
 	}
 
 }
-gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
+gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GList * child = gtk_container_get_children ((GtkContainer *)gstack);	
 	GList * first = child;
@@ -76,7 +76,7 @@ gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_da
 	
 }
 
-void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_comment_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *) scrolledwindow);
 	GtkTextBuffer * buffer = gtk_text_view_get_buffer ((GtkTextView *)text_view);	
@@ -95,7 +95,7 @@ void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
 	gtk_widget_show_all (window);		
 }
 
-void on_save_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_save_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	if(scrolledwindow){
@@ -143,7 +143,7 @@ void on_save_button_clicked (GtkToolButton * tool_button, gpointer data){
 	}
 }
 
-void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_open_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget *dialog;
 
 	dialog = gtk_file_chooser_dialog_new ("Open File", NULL, GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel", GTK_RESPONSE_CANCEL,"Open", GTK_RESPONSE_ACCEPT, NULL);
@@ -226,7 +226,7 @@ void on_connect_switch_activate (GtkSwitch * connect_switch, gpointer data){
 		end_client_connection();
 	}	
 }
-void on_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkSourceBuffer * source_buffer = gtk_source_buffer_new (NULL);
 	GtkWidget * source_view = gtk_source_view_new_with_buffer (source_buffer);
 	gtk_source_view_set_show_line_numbers ((GtkSourceView *)source_view, TRUE);
@@ -318,7 +318,7 @@ void on_background_color_menu_selected(GtkMenuItem * menu_i,GtkWidget *box){
 }
 
 
-void on_remove_page_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_remove_page_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	if(scrolledwindow)
 		gtk_widget_destroy ((GtkWidget *) scrolledwindow);
