@@ -315,4 +315,31 @@ void on_remove_page_button_clicked (GtkToolButton * tool_button, gpointer data){
 	if(scrolledwindow)
 		gtk_widget_destroy ((GtkWidget *) scrolledwindow);
 }
+
+void on_search_activate(GtkWidget *search_buffer, GtkEntry * search_entry){
+	GtkWidget * curr_scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
+	if(curr_scrolledwindow){
+		const gchar * text = gtk_entry_buffer_get_text ((GtkEntryBuffer *)search_buffer);
+		cout<<prev_search_text<<"-----"<<text<<'\n';
+		GtkWidget * curr_source_view = gtk_bin_get_child ( (GtkBin *) curr_scrolledwindow);
+		GtkSourceBuffer * buffer = (GtkSourceBuffer * )gtk_text_view_get_buffer ((GtkTextView *)curr_source_view);	
+		GtkSourceSearchSettings * source_search_settings =  gtk_source_search_settings_new ();
+		gtk_source_search_settings_set_case_sensitive((GtkSourceSearchSettings *) source_search_settings,FALSE);
+		if(strlen(prev_search_text)){
+			cout<<"hello";
+			gtk_source_search_settings_set_search_text((GtkSourceSearchSettings *) source_search_settings,prev_search_text);
+			gtk_source_search_settings_set_wrap_around((GtkSourceSearchSettings *) source_search_settings,TRUE);
+			GtkSourceSearchContext * search_context = gtk_source_search_context_new ((GtkSourceBuffer *) buffer, (GtkSourceSearchSettings *) source_search_settings);
+			gtk_source_search_context_set_highlight((GtkSourceSearchContext *)search_context, FALSE);
+		}
+		if(strlen(text)){
+			gtk_source_search_settings_set_search_text((GtkSourceSearchSettings *) source_search_settings,text);
+			gtk_source_search_settings_set_wrap_around((GtkSourceSearchSettings *) source_search_settings,TRUE);
+			GtkSourceSearchContext * search_context = gtk_source_search_context_new ((GtkSourceBuffer *) buffer, (GtkSourceSearchSettings *) source_search_settings);
+			gtk_source_search_context_set_highlight((GtkSourceSearchContext *)search_context, TRUE);
+		}
+		strcpy(prev_search_text,text);
+
+	}
+}
 //By Madhavi: end

@@ -31,6 +31,7 @@ GtkWidget  *menu_bar,*file_menu, *file_item, *view_menu, *view_item, *font_item,
 PangoFontDescription * font_desc;
 GdkRGBA color, bgcolor;
 gchar  server_ip1[INET6_ADDRSTRLEN];
+gchar prev_search_text[100];
 //By Madhavi: end
 
 
@@ -48,3 +49,4 @@ gchar * get_only_name(gchar * dir_name, gchar * file_name);
 void * server_init(void * ptr);
 gboolean not_empty(gchar * buff);
 int client_init();
+
