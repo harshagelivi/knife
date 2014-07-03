@@ -3,25 +3,35 @@ void destroy_signal(GtkWidget * widget, gpointer data){
 }
 gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * buffer){
 	if(event->keyval==GDK_KEY_KP_Enter || event->keyval==GDK_KEY_Return){
-		GtkTextIter start,end;
-		gchar *text;
+		if(client_flag){
+			GtkTextIter start,end;
+			gchar *text;
 	
-		gtk_text_buffer_get_start_iter ((GtkTextBuffer *)buffer, &start);
-		gtk_text_buffer_get_end_iter ((GtkTextBuffer *)buffer, &end);
-		text = gtk_text_buffer_get_text ((GtkTextBuffer *)buffer, &start, &end, FALSE);    
-		gtk_text_buffer_set_text( (GtkTextBuffer *)buffer, "", -1);		   
+			gtk_text_buffer_get_start_iter ((GtkTextBuffer *)buffer, &start);
+			gtk_text_buffer_get_end_iter ((GtkTextBuffer *)buffer, &end);
+			text = gtk_text_buffer_get_text ((GtkTextBuffer *)buffer, &start, &end, FALSE);    
+			gtk_text_buffer_set_text( (GtkTextBuffer *)buffer, "", -1);		   
 
-		if (send(client_sock_fd, text, strlen(text), 0) == -1){
-			perror("send");	
-		}else{
-			if(not_empty(text)){
-				g_print("client: sent '%s'", text);
-				GtkWidget * label = gtk_label_new (g_strconcat("You : ", text, NULL));
-				gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-				gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-				gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-				gtk_widget_show (label);					
-			}			
+			if (send(client_sock_fd, text, strlen(text), 0) == -1){
+				perror("send");	
+				end_client_connection();		
+			}else{
+				if(not_empty(text)){
+					g_print("client: sent '%s'\n", text);
+
+					GtkWidget * label = gtk_label_new (text);
+					gtk_misc_set_alignment ((GtkMisc *)label, 0.9, 0);
+					gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+					gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+					GdkRGBA label_color;
+					gdk_rgba_parse (&label_color, "green");
+					gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+					pthread_mutex_lock( &mutex_chat_box );
+					gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+					gtk_widget_show_all (window);					
+					pthread_mutex_unlock( &mutex_chat_box );
+				}			
+			}
 		}
 		return TRUE;
 	}else{
@@ -30,7 +40,7 @@ gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuff
 	}
 
 }
-gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_data){
+gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GList * child = gtk_container_get_children ((GtkContainer *)gstack);	
 	GList * first = child;
@@ -66,7 +76,7 @@ gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, gpointer   user_da
 	
 }
 
-void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_comment_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	GtkWidget * text_view = gtk_bin_get_child ( (GtkBin *) scrolledwindow);
 	GtkTextBuffer * buffer = gtk_text_view_get_buffer ((GtkTextView *)text_view);	
@@ -85,7 +95,7 @@ void on_comment_button_clicked (GtkToolButton * tool_button, gpointer data){
 	gtk_widget_show_all (window);		
 }
 
-void on_save_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_save_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	if(scrolledwindow){
@@ -133,7 +143,7 @@ void on_save_button_clicked (GtkToolButton * tool_button, gpointer data){
 	}
 }
 
-void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_open_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget *dialog;
 
 	dialog = gtk_file_chooser_dialog_new ("Open File", NULL, GTK_FILE_CHOOSER_ACTION_OPEN, "Cancel", GTK_RESPONSE_CANCEL,"Open", GTK_RESPONSE_ACCEPT, NULL);
@@ -162,10 +172,12 @@ void on_open_button_clicked (GtkToolButton * tool_button, gpointer data){
 			gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
 			gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);
+			gtk_text_view_set_wrap_mode ((GtkTextView *)source_view, GTK_WRAP_WORD);
 //By Madhavi:start
 			gtk_widget_override_font ((GtkWidget *) source_view, font_desc);
-			gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
-			gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+		//	gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
+		//	gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+		//	gtk_widget_set_sensitive ((GtkWidget *)source_view,TRUE);
 //By Madhavi:end
 			
 			gtk_text_buffer_set_text ((GtkTextBuffer *)source_buffer, (const gchar *)(buff), -1);
@@ -205,28 +217,31 @@ void on_connect_switch_activate (GtkSwitch * connect_switch, gpointer data){
 //	gtk_dialog_run( (GtkDialog *)ip_dialog);
 	if(gtk_switch_get_active ((GtkSwitch *)connect_switch)){
 		if(client_flag) return;
+		const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
+		const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
+		friend_port = atoi(port);
+		strcpy(friend_ip,ip);
 		client_flag=client_init() ? 1 : 0;
 	}else{
-		client_flag=0;
-		close(client_sock_fd);
-		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, FALSE);		
+		end_client_connection();
 	}	
 }
-void on_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkSourceBuffer * source_buffer = gtk_source_buffer_new (NULL);
 	GtkWidget * source_view = gtk_source_view_new_with_buffer (source_buffer);
 	gtk_source_view_set_show_line_numbers ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_auto_indent ((GtkSourceView *)source_view, TRUE);
 	gtk_source_view_set_indent_on_tab((GtkSourceView *)source_view, TRUE);
-	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);									//by madhavi
+	gtk_source_view_set_highlight_current_line((GtkSourceView *)source_view, TRUE);
+	gtk_text_view_set_wrap_mode ((GtkTextView *)source_view, GTK_WRAP_WORD);
 	GtkWidget* scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
 	gtk_container_add(GTK_CONTAINER(scrolledwindow), (GtkWidget *)source_view);
 	gtk_stack_add_titled ((GtkStack *)gstack,(GtkWidget *)scrolledwindow, g_strdup_printf ("New %d",tab_counter), g_strdup_printf ("New %d",tab_counter));
 
 //by Madhavi: start
 	gtk_widget_override_font ((GtkWidget *) source_view, (PangoFontDescription*) font_desc);
-	gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
-	gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
+	//gtk_widget_override_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &color);
+	//gtk_widget_override_background_color((GtkWidget *) source_view, GTK_STATE_FLAG_DIR_LTR, &bgcolor);
 //by Madhavi: end
 
 	tab_counter++;	
@@ -247,13 +262,6 @@ void initialise_font_and_color(){
 	bgcolor.green=1.0;
 	bgcolor.blue=1.0;
 	bgcolor.alpha=1.0;
-}
-
-void on_connect_box_button_clicked(GtkButton * conn_box_button, GtkEntry * connect_ip_entry){
-	const gchar * ip=gtk_entry_get_text ((GtkEntry *)connect_ip_entry);
-	const gchar * port =gtk_entry_get_text((GtkEntry *) connect_port_entry);
-	server_port = atoi(port);
-	strcpy(server_ip1,ip);
 }
 
 void on_font_menu_selected(GtkMenuItem * menu_i,GtkWidget * box){
@@ -310,7 +318,7 @@ void on_background_color_menu_selected(GtkMenuItem * menu_i,GtkWidget *box){
 }
 
 
-void on_remove_page_button_clicked (GtkToolButton * tool_button, gpointer data){
+void on_remove_page_button_clicked (GtkToolButton * tool_button, GtkStack * gstack){
 	GtkWidget * scrolledwindow = gtk_stack_get_visible_child( (GtkStack *)gstack);
 	if(scrolledwindow)
 		gtk_widget_destroy ((GtkWidget *) scrolledwindow);

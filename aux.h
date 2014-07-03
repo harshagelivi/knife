@@ -19,8 +19,8 @@ gboolean not_empty(gchar * buff){
 	return FALSE;
 }
 void * server_init(void * ptr){
-	gint server_sock_fd, new_fd, yes=1,bytesnum; 
-	struct sockaddr_in server_addr, client_addr;	
+	gint server_sock_fd, new_fd, yes=1,bytesnum,backlog=10; 
+	struct sockaddr_in server_addr, friend_addr;	
 	gchar buf[MAXDATA];
 	if((server_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
 		perror("server: socket");
@@ -38,49 +38,90 @@ void * server_init(void * ptr){
 		close(server_sock_fd);
 		perror("server: bind");
 	}else{
-		if (listen(server_sock_fd, BACKLOG) == -1) {
+		if (listen(server_sock_fd, backlog) == -1) {
 			perror("listen");
 		}else{
-			g_print("server: waiting for connections...\n");
 			socklen_t sin_size;
-			sin_size = sizeof(client_addr);
+			sin_size = sizeof(friend_addr);
 			char s[INET6_ADDRSTRLEN];
 			while(1){
-				new_fd = accept(server_sock_fd, (struct sockaddr *)&client_addr, &sin_size);
+				g_print("server: waiting for connections...\n");
+				new_fd = accept(server_sock_fd, (struct sockaddr *)&friend_addr, &sin_size);
 				if (new_fd == -1) {
 					perror("accept");
 				}else{
-					inet_ntop(client_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
-					printf("server: got connection from %s\n", s);
-					while(1){
-						if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
-							perror("recv");
-							exit(1);
-						}else if(!bytesnum){
-							break;
-						}else{
-							buf[bytesnum] = '\0';
-							g_print("server: received '%s'\n",buf);	
-							if(not_empty(buf)){
-								GtkWidget * label = gtk_label_new (g_strconcat("Friend : ", buf, NULL));
-								gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
-								gtk_label_set_selectable ((GtkLabel *)label, TRUE);
-								gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
-								gtk_widget_show (label);					
+					inet_ntop(friend_addr.sin_family, (void *)&server_addr.sin_addr, s, sizeof s);
+					//system(g_strdup_printf ("notify-send '%s would like to connect to you'", s));
+					GtkWidget *dialog;
+					dialog = gtk_message_dialog_new(NULL, GTK_DIALOG_MODAL,	GTK_MESSAGE_QUESTION, 
+					GTK_BUTTONS_YES_NO, "%s would like to connect to you. Do you accept?", s);
+					gtk_window_set_title(GTK_WINDOW(dialog), "New Conection request");
+					if(gtk_dialog_run(GTK_DIALOG(dialog))==GTK_RESPONSE_YES){
+						gtk_widget_destroy(dialog);					
+						g_print("server: got connection from %s\n", s);
+						strcpy(friend_ip, s);
+						friend_port=friend_addr.sin_port;
+						client_flag=client_init()?1:0;
+
+						while(1){
+							if ((bytesnum = recv(new_fd, buf, MAXDATA-1, 0)) == -1) {
+								perror("recv");
+								break;
+							}else if((!bytesnum)){
+								break;
+							}else{
+								buf[bytesnum] = '\0';
+								g_print("server: received '%s'\n",buf);	
+								if(not_empty(buf)){
+									GtkWidget * label = gtk_label_new (buf);
+									gtk_misc_set_alignment ((GtkMisc *)label, 0, 0);
+									gtk_label_set_line_wrap ((GtkLabel *)label, TRUE);
+									gtk_label_set_selectable ((GtkLabel *)label, TRUE);
+									GdkRGBA label_color;
+									gdk_rgba_parse (&label_color, "blue");
+									gtk_widget_override_color((GtkWidget *)label, GTK_STATE_FLAG_DIR_LTR, &label_color);
+									gtk_widget_show (label);
+									pthread_mutex_lock( &mutex_chat_box );
+									gtk_box_pack_start ((GtkBox *)chat_box, label, FALSE, FALSE, 0);
+									pthread_mutex_unlock( &mutex_chat_box );
+													
+								}
 							}
 						}
-					}
+					}else{
+						g_print("server: rejected connection with %s\n", s);
+						close(new_fd);
+						//end_client_connection();  //this is needed when connected to a loopback interface
+						gtk_widget_destroy(dialog);					
+						continue;
+					}	
 					
 				}
+				g_print("server: connection ended with %s\n", s);
+				end_client_connection();
 				close(new_fd);
 			}
 		}
 	}
 	g_print("thread done\n");	
 }
+void end_client_connection(){
+	if(client_flag){
+		client_flag=0;
+		close(client_sock_fd);
+		g_print("client: ended connection with %s\n", friend_ip);
+		gtk_switch_set_active ((GtkSwitch *)connect_switch, FALSE);	
+		gtk_label_set_text ((GtkLabel *)sep_label, "Tell me where can i find your friend");
+		gtk_widget_set_sensitive ((GtkWidget *) connect_ip_entry, TRUE);	
+		gtk_widget_set_sensitive ((GtkWidget *) connect_port_entry, TRUE);
+		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, FALSE);					
+	}	
+}	
+
 int client_init(){
+	if(client_flag) return 1; //used during loopback connection
 		if((client_sock_fd = socket(AF_INET, SOCK_STREAM, 0)) == -1){
-			perror("server: socket");
+			perror("client: socket");
 			return 0;
 		}
 
@@ -88,18 +129,21 @@ int client_init(){
 			perror("setsockopt");
 			return 0;
 		}
-		server_addr.sin_family = AF_INET;
-		server_addr.sin_port = htons(client_port);
+		friend_addr.sin_family = AF_INET;
+		friend_addr.sin_port = htons(friend_port);
 
-		inet_pton(AF_INET, "127.0.0.1", &server_addr.sin_addr.s_addr);
+		inet_pton(AF_INET, friend_ip, &friend_addr.sin_addr.s_addr);
 	
-		if (connect(client_sock_fd, (struct sockaddr *)&server_addr, sizeof server_addr) == -1) {
+		if (connect(client_sock_fd, (struct sockaddr *)&friend_addr, sizeof friend_addr) == -1) {
 			close(client_sock_fd);
 			perror("client: connect");
 			return 0;
 		}
-		inet_ntop(server_addr.sin_family, (void *)&server_addr.sin_addr,  server_ip, sizeof  server_ip);		
-		g_print("client: connected to %s\n",  server_ip);
+		inet_ntop(friend_addr.sin_family, (void *)&friend_addr.sin_addr,  friend_ip, sizeof  friend_ip);		
+		g_print("client: connected to %s\n",  friend_ip);
+		gtk_label_set_text ((GtkLabel *)sep_label, g_strdup_printf("You are connected to %s at %d",friend_ip, friend_port));
+		gtk_widget_set_sensitive ((GtkWidget *) connect_ip_entry, FALSE);	
+		gtk_widget_set_sensitive ((GtkWidget *) connect_port_entry, FALSE);
 		gtk_text_view_set_editable ((GtkTextView *)chat_source_view, TRUE);
 		return 1;
 }
