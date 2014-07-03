@@ -32,6 +32,7 @@ GtkWidget  *menu_bar,*file_menu, *file_item, *view_menu, *view_item, *font_item,
 PangoFontDescription * font_desc;
 GdkRGBA color, bgcolor;
 gchar  server_ip1[INET6_ADDRSTRLEN];
+gchar prev_search_text[100];
 //By Madhavi: end
 
 
