@@ -57,9 +57,9 @@ int main(int argc, char **argv){
 	gtk_stack_set_transition_duration ((GtkStack *)gstack, 700);
 
 //By Madhavi: start
-	g_signal_connect ( G_OBJECT( font_item), "activate",   G_CALLBACK(on_font_menu_selected),box);
-	g_signal_connect ( G_OBJECT( color_item), "activate",   G_CALLBACK(on_color_menu_selected), box);
-	g_signal_connect ( G_OBJECT( bg_color_item), "activate",   G_CALLBACK(on_background_color_menu_selected), box);
+	g_signal_connect ( G_OBJECT( font_item), "activate",   G_CALLBACK(on_font_menu_selected),(GtkStack *) gstack);
+	g_signal_connect ( G_OBJECT( color_item), "activate",   G_CALLBACK(on_color_menu_selected),(GtkStack *) gstack);
+	g_signal_connect ( G_OBJECT( bg_color_item), "activate",   G_CALLBACK(on_background_color_menu_selected),(GtkStack *) gstack);
 	g_signal_connect ( G_OBJECT( quit_item), "activate",   G_CALLBACK(destroy_signal), NULL);
 //By Madhavi: end
 	GtkWidget * add_button = gtk_button_new_from_icon_name ("list-add",GTK_ICON_SIZE_BUTTON);
@@ -75,11 +75,16 @@ int main(int argc, char **argv){
 	gtk_box_pack_start ((GtkBox *)widget_box, save_button, FALSE, FALSE, 10);
 //By Madhavi: start
 	GtkWidget * search_entry = gtk_search_entry_new ();
-	gtk_entry_set_overwrite_mode ((GtkEntry *) search_entry,TRUE);
 	GtkEntryBuffer * search_buffer = gtk_entry_get_buffer ((GtkEntry *) search_entry);
 	g_signal_connect ((GtkWidget *)(search_buffer), "inserted-text", G_CALLBACK (on_search_insert), (GtkStack *) gstack);	
 	g_signal_connect ((GtkWidget *)(search_buffer), "deleted-text", G_CALLBACK (on_search_delete), (GtkStack *) gstack);	
+	g_signal_connect ((GtkEntry *)(search_entry), "activate", G_CALLBACK (on_search_activate),  (GtkStack *) gstack);
 	gtk_box_pack_start ((GtkBox *)widget_box, search_entry, FALSE, FALSE, 10);
+
+	GtkWidget * search_replace_button = gtk_button_new_with_label ("Search and Replace");
+	g_signal_connect ((GtkButton *)(search_replace_button), "clicked", G_CALLBACK (on_search_replace_button_clicked), (GtkStack *) gstack);
+	gtk_box_pack_start ((GtkBox *)widget_box, search_replace_button, FALSE, FALSE, 10);
+
 
 	GtkWidget * remove_page_button = gtk_button_new_from_icon_name ("window-close",GTK_ICON_SIZE_BUTTON);
 	g_signal_connect ((GtkButton *)(remove_page_button), "clicked", G_CALLBACK (on_remove_page_button_clicked), (GtkStack *) gstack);

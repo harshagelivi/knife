@@ -33,6 +33,14 @@ PangoFontDescription * font_desc;
 GdkRGBA color, bgcolor;
 gchar  server_ip1[INET6_ADDRSTRLEN];
 gchar prev_search_text[100];
+gint search_replace_flag=0;
+GtkWidget * snr_list_box;
+
+struct snr{
+	GtkWidget * gstack;
+	GtkWidget * listbox;
+};
+
 //By Madhavi: end
 
 
@@ -45,6 +53,20 @@ void on_connect_switch_activate(GtkSwitch *, gpointer data);
 void on_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
 gboolean on_key_press(GtkWidget *widget, GdkEventKey  *event, GtkStack *);
 gboolean on_key_press_send(GtkWidget *widget, GdkEventKey  *event, GtkSourceBuffer * source_buffer);
+
+void on_search_delete(GtkWidget *search_buffer, guint position, guint n_chars, GtkStack * gstack);
+void on_search_insert(GtkWidget *search_buffer, guint position, gchar  *chars, guint n_chars, GtkStack * gstack);
+void on_search_activate(GtkWidget *search_entry, GtkStack *gstack);
+void on_remove_page_button_clicked (GtkToolButton * tool_button, GtkStack * gstack);
+void on_background_color_menu_selected(GtkMenuItem * menu_i, GtkStack *gstack);
+void on_color_menu_selected(GtkMenuItem * menu_i, GtkStack *gstack);
+void on_font_menu_selected(GtkMenuItem * menu_i,GtkStack *gstack);
+void initialise_font_and_color();
+void destroy_snr();
+void on_snr_find_button_clicked(GtkButton *snr_find_button, struct snr * argument);
+void on_snr_replace_one_button_clicked(GtkButton *snr_find_button, struct snr * argument);
+void on_snr_replace_all_button_clicked(GtkButton *snr_find_button, struct snr * argument);
+void on_snr_find_next_button_clicked(GtkButton *snr_find_next_button, struct snr * argument);
 
 gchar * get_only_name(gchar * dir_name, gchar * file_name);
 void * server_init(void * ptr);
